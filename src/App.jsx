@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react';
 const DEFAULT_XML = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <circle cx="100" cy="100" r="60" fill="#f97316" />
   <rect x="60" y="140" width="80" height="20" rx="4" fill="#1d4ed8" />
-  <text x="100" y="108" text-anchor="middle" font-size="16" fill="white">Hello Rupadi</text>
+  <text x="100" y="108" text-anchor="middle" font-size="16" fill="white">Hello SVG</text>
 </svg>`;
 
 function applyXML(value, setPreview, setError, setIsDirty) {
@@ -33,6 +33,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [spinning, setSpinning] = useState(false);
+  const [bgMode, setBgMode] = useState('white'); // 'white' | 'black' | 'green'
   const editorRef = useRef(null);
 
   const refresh = useCallback(() => {
@@ -99,14 +100,15 @@ export default function App() {
         )}
 
         {/* Auto-refresh toggle */}
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}>
-          <div
-            onClick={() => setAutoRefresh(v => !v)}
-            style={{
-              width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer',
-              background: autoRefresh ? '#0e7490' : '#4b5563', transition: 'background 0.2s',
-            }}
-          >
+        <div
+          onClick={() => setAutoRefresh(v => !v)}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}
+          title="Toggle auto-refresh"
+        >
+          <div style={{
+            width: 36, height: 20, borderRadius: 10, position: 'relative',
+            background: autoRefresh ? '#0e7490' : '#4b5563', transition: 'background 0.2s',
+          }}>
             <div style={{
               position: 'absolute', top: 2, left: autoRefresh ? 18 : 2,
               width: 16, height: 16, borderRadius: '50%', background: '#fff',
@@ -114,9 +116,9 @@ export default function App() {
             }} />
           </div>
           <span style={{ fontSize: 12, color: '#9ca3af' }}>Auto</span>
-        </label>
+        </div>
 
-        {/* Save button */}
+        {/* Save button (only when auto is off) */}
         {!autoRefresh && (
           <button
             onClick={save}
@@ -175,7 +177,20 @@ export default function App() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <span>PREVIEW</span>
-            {/* Manual refresh button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {/* BG toggle */}
+              <button
+                onClick={() => setBgMode(m => m === 'white' ? 'black' : m === 'black' ? 'green' : 'white')}
+                title={`Preview background: ${bgMode}`}
+                style={{
+                  background: bgMode === 'white' ? '#ffffff' : bgMode === 'black' ? '#000000' : '#14532d',
+                  border: '1px solid #4b5563', borderRadius: 4,
+                  color: bgMode === 'white' ? '#111' : '#fff', cursor: 'pointer', fontSize: 11, padding: '1px 7px',
+                  lineHeight: 1.4,
+                }}
+              >
+                {bgMode === 'white' ? 'White' : bgMode === 'black' ? 'Black' : 'Green'}
+              </button>
             <button
               onClick={refresh}
               title="Refresh preview"
@@ -191,17 +206,15 @@ export default function App() {
               }}>↻</span>
               <span style={{ fontSize: 11 }}>Refresh</span>
             </button>
+            </div>
           </div>
 
           <div style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'auto', background: '#ffffff', position: 'relative',
+            overflow: 'auto', position: 'relative',
+            background: bgMode === 'black' ? '#000000' : bgMode === 'green' ? '#14532d' : '#ffffff',
+            transition: 'background 0.2s',
           }}>
-            <div style={{
-              position: 'absolute', inset: 0, opacity: 0.06,
-              backgroundImage: 'repeating-conic-gradient(#aaa 0% 25%, transparent 0% 50%)',
-              backgroundSize: '20px 20px',
-            }} />
             <div
               className="svg-preview"
               style={{ position: 'relative', width: '90%', height: '90%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
